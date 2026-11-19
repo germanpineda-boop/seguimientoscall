@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimientos</title>
+<style>
+:root{--blue:#1a5fd0;--pc:#1a5fd0;--bg:#f6f7f9;--line:#d9dde3;--ink:#0f1722;--mut:#6b7380}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.tabs{background:#fff;border-bottom:1px solid var(--line);padding:8px 12px}
+.tabs div{display:inline-flex;gap:4px;background:#eceef2;border-radius:8px;padding:3px}
+.tabs button{--c:var(--mut);border:0;background:color-mix(in srgb,var(--c) 14%,#fff);padding:7px 14px;border-radius:6px;font:inherit;font-weight:600;color:color-mix(in srgb,var(--c) 75%,#000);cursor:pointer}
+.tabs button:hover{background:color-mix(in srgb,var(--c) 26%,#fff)}
+.tabs button.on{background:var(--c);color:#fff;box-shadow:0 1px 2px #0003}
+main{max-width:1300px;margin:0 auto;padding:36px 20px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:38px;font-weight:800;letter-spacing:-1px}
+h1 small{font-size:18px;font-weight:400;color:var(--mut);letter-spacing:0;margin-left:6px}
+.tools{display:flex;align-items:center;gap:10px}
+.icon{border:0;background:none;padding:8px;cursor:pointer;border-radius:6px;color:var(--ink);display:grid;place-items:center}
+.icon:hover{background:#eceef2}
+.btn{border:1px solid var(--line);background:#fff;padding:9px 14px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;gap:8px;align-items:center;color:var(--ink)}
+.btn:hover{background:#f1f3f6}
+.btn:disabled{opacity:.45;cursor:default;background:#fff}
+.btn.sq{padding:9px 11px}
+.btn.red{color:#d32f2f;border-color:#f0c4c4}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.pri:hover{background:#154fb0}
+svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.etools{display:none;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.etools.on{display:flex}
+.range{margin:22px 0 0;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:500}
+.range input{border:0;font:inherit;color:var(--ink);background:none;padding:2px}
+#q{display:none;width:100%;margin-top:14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit}
+#emsg{display:none;text-align:center;color:var(--mut);font-size:18px;margin:90px 0}
+.wrap{margin-top:32px;border:2px solid var(--pc);border-radius:6px;overflow:auto;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:900px}
+th{background:var(--pc);color:#fff;text-align:left;padding:0 10px;height:40px;font-weight:600;white-space:nowrap;border-right:1px solid #ffffff33}
+th>span{display:flex;justify-content:space-between;align-items:center;gap:14px}
+th button{background:none;border:0;color:#fff;opacity:.8;cursor:pointer;padding:4px;border-radius:4px}
+th button:hover,th button.act{opacity:1;background:#ffffff33}
+td{padding:9px 12px;border-top:1px solid var(--line);border-right:1px solid var(--line);font-weight:500}
+tbody tr:nth-child(even){background:#f3f5f8}
+td[contenteditable=true]{outline:2px dashed color-mix(in srgb,var(--pc) 45%,transparent);outline-offset:-3px;background:#fffbe6;cursor:text}
+th .cb{display:flex;gap:2px}
+th button:disabled{opacity:.25;cursor:default;background:none}
+th .cn{outline:none;min-width:40px;border-radius:4px;padding:2px 4px}
+th .cn:focus{background:#ffffff33}
+#subtools{display:none;gap:8px;margin-top:12px;flex-wrap:wrap}
+.grid td[data-r]{user-select:none;cursor:cell}
+.grid td[contenteditable=true]{user-select:text;cursor:text}
+tbody td.sel{background:color-mix(in srgb,var(--pc) 22%,#fff) !important}
+tbody td.ac{outline:2px solid var(--pc);outline-offset:-2px}
+#hint{display:none;color:var(--mut);margin:10px 0 0}
+#who{display:none;align-items:center;gap:10px;margin-top:10px;color:var(--mut)}
+.box select{display:block;width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+.li select{margin:0;width:auto;flex:1;min-width:0}
+.roles{color:var(--mut);font-size:12.5px;margin:0 0 12px;padding-left:18px}
+.box h3{margin:18px 0 0;font-size:15px}
+td.hi{background:#fcd9d9 !important;color:#8a1f1f}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+.mini{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer}
+.mini:hover{background:#eceef2}
+#pop,.menu{position:absolute;display:none;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0003;padding:6px;z-index:10;color:var(--ink)}
+#pop{width:230px;max-height:300px;overflow:auto;padding:8px}
+#pop label{display:flex;gap:8px;padding:5px 6px;border-radius:4px;cursor:pointer}
+#pop label:hover{background:#eceef2}
+#pop .acts{display:flex;gap:8px;padding:4px 6px 8px}
+#pop .acts button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer}
+.menu{min-width:190px}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;padding:8px 12px;border-radius:6px;cursor:pointer}
+.menu button:hover{background:#eceef2}
+.menu button.on{background:#e3edfc;color:var(--blue);font-weight:600}
+.ov{position:fixed;inset:0;background:#0f172299;display:none;place-items:center;z-index:20}
+.ov.open{display:grid}
+.box{background:#fff;border-radius:12px;padding:24px;width:min(420px,92vw);max-height:85vh;overflow:auto;box-shadow:0 20px 50px #0004}
+.box h2{margin:0 0 4px;font-size:20px}
+.box p{margin:0 0 16px;color:var(--mut)}
+.box label{display:block;font-weight:600;margin-bottom:12px}
+.box input{display:block;width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.box input:focus{outline:2px solid var(--blue);border-color:transparent}
+.err{color:#c62828;min-height:20px;margin:0 0 8px;font-weight:500}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.row button{font:inherit;font-weight:600;padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer}
+.row .ok{background:var(--blue);border-color:var(--blue);color:#fff}
+.li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.li small{color:var(--mut);white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;display:none;z-index:30}
+</style>
+</head>
+<body>
+<nav class="tabs"><div id="tabs"></div></nav>
+<main>
+  <header>
+    <h1>SEGUIMIENTOS<small id="plat"></small></h1>
+    <div class="tools" id="vtools">
+      <button class="icon" id="bSearch" title="Buscar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="btn" id="bEdit"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Editar</button>
+      <button class="icon" id="bReset" title="Limpiar filtros"></button>
+    </div>
+  </header>
+  <div id="who"></div>
+  <div class="etools" id="etools"></div>
+  <input id="q" type="search" placeholder="Buscar en la tabla…">
+  <div class="range" id="range">Seguimiento del <input type="date" id="d1"> hasta el <input type="date" id="d2"></div>
+  <p id="emsg">Selecciona una tabla del menú “Sub-tablas” para comenzar a editar</p>
+  <div class="wrap" id="wrap"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div>
+  <div id="subtools"><button class="btn" id="addrow">+ Agregar fila</button><button class="btn" id="addcol">+ Agregar columna</button><button class="btn" id="addagent">+ Agregar agente</button></div>
+  <p id="hint">Selecciona celdas con el clic o arrastrando. Copia con Ctrl+C, corta con Ctrl+X y pega con Ctrl+V, también desde y hacia Excel. Doble clic, Enter o escribir para editar; Supr borra. En la tabla principal los conteos se calculan solos.</p>
+</main>
+
+<div class="ov" id="lg"><form class="box" id="lgf" autocomplete="off">
+  <h2>Acceso para editar</h2>
+  <p>Ingresa tu usuario y contraseña.</p>
+  <label>Usuario<input id="lu" type="text" autocomplete="off" required></label>
+  <label>Contraseña<input id="lp" type="password" autocomplete="off" required></label>
+  <p class="err" id="le" role="alert"></p>
+  <div class="row"><button type="button" id="lc">Cancelar</button><button type="submit" class="ok">Ingresar</button></div>
+</form></div>
+<div class="ov" id="md"><div class="box" id="mdb"></div></div>
+<div class="menu" id="smenu"></div>
+<div id="pop"></div>
+<div id="toast" role="status"></div>
+<input type="file" id="xf" accept=".xlsx,.xls,.csv" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ====== DATOS DE EJEMPLO: cada plataforma tiene sus propias columnas y filas ======
+const DATA = {
+  "Dominos": {
+    cols: ["Usuario de C3","Agente","Coach","Error","Quejas","Reenvios","Entradas tarde","Inasistencias"],
+    rows: [
+      ["jperez","Juan Pérez López","Coach Ana",0,0,0,1,0],
+      ["mgomez","María Gómez Ruiz","Coach Ana",0,1,0,3,0],
+      ["lrojas","Luis Rojas Díaz","Coach Ana",2,0,0,3,1],
+      ["cmendez","Carla Méndez Soto","Coach Pedro",0,0,0,1,0],
+      ["dlopez","Diego López Vega","Coach Pedro",0,0,1,1,0],
+      ["spaz","Sofía Paz Mora","Coach Pedro",0,0,0,0,0]
+    ]
+  },
+  "Anfora": {
+    cols: ["Usuario","Agente","Supervisor","Llamadas","Ventas","Reclamos","Ausencias"],
+    rows: [
+      ["rsilva","Rosa Silva Luna","Supervisor Marta",3,1,0,0],
+      ["tavila","Tomás Ávila Rey","Supervisor Marta",2,0,1,1],
+      ["ebarrios","Elena Barrios Paz","Supervisor Marta",4,2,0,0],
+      ["gcastro","Gabriel Castro Vela","Supervisor Raúl",1,0,2,2]
+    ]
+  },
+  "Dex": {
+    cols: ["Usuario","Agente","Coach","Tickets","Escalaciones","Reaperturas","Entradas tarde"],
+    rows: [
+      ["kflores","Karla Flores Gil","Coach Iván",3,1,0,1],
+      ["nreyes","Nelson Reyes Cano","Coach Iván",2,0,0,0],
+      ["vmoran","Valeria Morán Paz","Coach Iván",4,2,1,2],
+      ["ocano","Oscar Cano Lima","Coach Lucía",1,1,0,0],
+      ["pmora","Paola Mora Ruiz","Coach Lucía",2,0,1,1]
+    ]
+  }
+};
+const TAB_COLORS = {"Dominos":"#1a5fd0", "Anfora":"#e8710a", "Dex":"#6b7380"};  // color de cada pestaña
+const NUM_FROM = 3;                       // las 3 primeras columnas (usuario, agente, coach) son fijas
+const LIMITE_ROJO = 3;                    // si el conteo es mayor a este número, la celda se pone en rojo claro
+Object.values(DATA).forEach(d => d.kinds = d.cols.map((_, i) => i < NUM_FROM ? "t" : "n"));  // t = libre, n = contador
+const SUBCOLS = ["Usuario","Fecha","Detalle"];
+const ADMIN = {user:"Administrador", pass:"@D0MP@L@NF0$19", role:"Administrador"};
+const ALL = ["search","up","down","sub","undo","redo","clear","ret","add","addcol","hist","save","gear"];
+const ROLES = {
+  "Administrador": {allow:ALL, tables:null, desc:"Todas las opciones, incluidos agregar columnas y administrar usuarios."},
+  "Jefe": {allow:ALL.filter(a => !["add","addcol"].includes(a)), tables:null, desc:"Todas las opciones, menos crear usuarios y agregar columnas."},
+  "Supervisor": {allow:ALL.filter(a => !["add","addcol","clear","ret"].includes(a)), tables:null, desc:"Como Jefe, pero sin Vaciar ni Retirados."},
+  "Retirador": {allow:["down","sub","undo","redo","ret","save","gear"], tables:["R.Quejas","R.Error","R.Reenvios"], desc:"Solo Retirados, Descargar Excel y las sub-tablas R.Quejas, R.Error y R.Reenvios."}
+};
+const UKEY = "seguimientos_users_v1";
+let USERS = [{...ADMIN, main:true}];
+function saveUsers(){ try{ localStorage.setItem(UKEY, JSON.stringify(USERS)); }catch(e){} }
+function loadUsers(){
+  try{
+    const ok = JSON.parse(localStorage.getItem(UKEY) || "[]").filter(u => u && u.user && typeof u.pass==="string" && ROLES[u.role]);
+    if(!ok.some(u => u.main)){ const i = ok.findIndex(u => u.user===ADMIN.user); if(i>=0) ok[i].main = true; else ok.unshift({...ADMIN, main:true}); }
+    ok.forEach(u => { if(u.main) u.role = "Administrador"; });
+    USERS = ok;
+  }catch(e){}
+}
+
+const KEY = "seguimientos_v2";
+// ================================================================================
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const P = (d) => `<svg viewBox="0 0 24 24">${d}</svg>`;
+const I = {
+  search:P('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  up:P('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M12 17v-5"/><path d="m9.5 14.5 2.5-2.5 2.5 2.5"/>'),
+  down:P('<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'),
+  chev:P('<path d="m6 9 6 6 6-6"/>'),
+  undo:P('<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'),
+  redo:P('<path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>'),
+  eraser:P('<path d="m7 21-4-4a2 2 0 0 1 0-3L14 3a2 2 0 0 1 3 0l4 4a2 2 0 0 1 0 3L10 21Z"/><path d="M22 21H7"/><path d="m5 11 9 9"/>'),
+  ext:P('<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'),
+  userplus:P('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>'),
+  hist:P('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>'),
+  edit:P('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+  gear:P('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>'),
+  funnel:P('<path d="M3 4h18l-7 8v6l-4 2v-8Z"/>')
+};
+$("bReset").innerHTML = I.gear;
+
+// ---- estado (todo es independiente por plataforma) ----
+const S={}, SUB={}, SUBC={}, RET={}, LOG={}, HIST={};
+const nIdx = p => DATA[p].cols.map((_,i) => i).filter(i => DATA[p].kinds[i]==="n");
+const isN = (p,i) => DATA[p].kinds[i]==="n";
+const subOf = c => "R." + String(c).replace(/\s+/g,"");
+const subnames = p => nIdx(p).map(i => subOf(DATA[p].cols[i]));
+Object.keys(DATA).forEach(p => {
+  S[p] = {filters:{}, term:"", d1:"", d2:"", editing:false, view:null, logLen:0};
+  SUB[p] = {}; SUBC[p] = {}; subnames(p).forEach((n,k) => {
+    const rows = [];
+    DATA[p].rows.forEach(r => { for(let j=0; j<r[nIdx(p)[k]]; j++) rows.push([r[0], "2026-11-03", "Ejemplo de registro"]); });
+    SUB[p][n] = rows; SUBC[p][n] = [...SUBCOLS];
+  });
+  RET[p] = []; LOG[p] = []; HIST[p] = {undo:[], redo:[]};
+});
+let plat = Object.keys(DATA)[0], session = null;
+const st = () => S[plat], dt = () => DATA[plat], H = () => HIST[plat];
+const can = a => !!session && ROLES[session.role].allow.includes(a);
+const canTable = k => { if(!session) return false; const t = ROLES[session.role].tables; return !t || t.includes(k); };
+
+// ---- guardado en el navegador ----
+function persist(){
+  try{
+    localStorage.setItem(KEY, JSON.stringify({rows:Object.fromEntries(Object.keys(DATA).map(p=>[p,DATA[p].rows])), cols:Object.fromEntries(Object.keys(DATA).map(p=>[p,DATA[p].cols])), kinds:Object.fromEntries(Object.keys(DATA).map(p=>[p,DATA[p].kinds])), sub:SUB, subc:SUBC, ret:RET, log:LOG}));
+    return true;
+  }catch(e){ return false; }
+}
+function load(){
+  try{
+    const o = JSON.parse(localStorage.getItem(KEY) || "null"); if(!o) return;
+    for(const p in DATA){
+      if(o.cols && o.cols[p]){ DATA[p].cols = o.cols[p]; DATA[p].kinds = (o.kinds && o.kinds[p]) || o.cols[p].map((_,i) => i < NUM_FROM ? "t" : "n"); }
+      if(o.rows && o.rows[p]) DATA[p].rows = o.rows[p];
+      if(o.sub && o.sub[p]) SUB[p] = o.sub[p];
+      if(o.subc && o.subc[p]) SUBC[p] = o.subc[p];
+      if(o.ret && o.ret[p]) RET[p] = o.ret[p];
+      if(o.log && o.log[p]) LOG[p] = o.log[p];
+      subnames(p).forEach(n => { if(!SUB[p][n]) SUB[p][n] = []; if(!SUBC[p][n]) SUBC[p][n] = [...SUBCOLS]; });
+    }
+  }catch(e){}
+}
+
+// ---- historial de cambios, deshacer y rehacer ----
+const snap = () => JSON.stringify({rows:dt().rows, cols:dt().cols, kinds:dt().kinds, sub:SUB[plat], subc:SUBC[plat], ret:RET[plat]});
+function restore(j){ const o = JSON.parse(j); dt().rows = o.rows; if(o.cols) dt().cols = o.cols; if(o.kinds) dt().kinds = o.kinds; SUB[plat] = o.sub; SUBC[plat] = o.subc; RET[plat] = o.ret; }
+function log(m){ LOG[plat].push({t:new Date().toLocaleString("es-GT"), m, u:session ? session.user : ""}); }
+// Las columnas numéricas de la tabla principal = veces que el usuario aparece en cada sub-tabla
+const ucol = n => { const i = SUBC[plat][n].findIndex(c => /^usuario/i.test(String(c).trim())); return i<0 ? 0 : i; };
+function recalc(){
+  nIdx(plat).forEach(ci => {
+    const n = subOf(dt().cols[ci]); if(!SUB[plat][n]) return;
+    const u = ucol(n), cnt = {};
+    SUB[plat][n].forEach(r => { const key = String(r[u] ?? "").trim().toLowerCase(); if(key) cnt[key] = (cnt[key]||0) + 1; });
+    dt().rows.forEach(r => { r[ci] = cnt[String(r[0]).trim().toLowerCase()] || 0; });
+  });
+}
+function mutate(m, fn){
+  const b = snap(); fn(); recalc(); H().undo.push(b); H().redo = []; log(m);
+  if(st().editing) etools();
+}
+function toast(m){ const t=$("toast"); t.textContent=m; t.style.display="block"; clearTimeout(toast.id); toast.id=setTimeout(()=>t.style.display="none",2800); }
+
+let anc = null, foc = null, dragging = false, editCell = null, gridKey = "";
+const isGrid = () => { const s = st(); return !!(s.editing && s.view); };
+
+// ---- tabla actual ----
+function cur(){
+  const s = st();
+  if(s.editing && s.view && s.view!=="main") return {key:s.view, cols:SUBC[plat][s.view], rows:SUB[plat][s.view], main:false};
+  return {key:"main", cols:dt().cols, rows:dt().rows, main:true};
+}
+const label = () => { const c=cur(); return c.main ? "Tabla Principal" : c.key; };
+
+// ---- pintar ----
+function tabs(){
+  document.documentElement.style.setProperty("--pc", TAB_COLORS[plat] || "#6b7380");
+  $("tabs").innerHTML = Object.keys(DATA).map(p => `<button class="${p===plat?"on":""}" data-p="${p}" style="--c:${TAB_COLORS[p]||"#6b7380"}">${p}</button>`).join("");
+  $("plat").textContent = "— " + plat;
+}
+function etools(){
+  const h = H(), B = (a, html) => can(a) ? html : "";
+  $("etools").innerHTML =
+    B("search", `<button class="icon" data-a="search" title="Buscar">${I.search}</button>`) +
+    B("up", `<button class="btn" data-a="up">${I.up}Subir Excel</button>`) +
+    B("down", `<button class="btn" data-a="down">${I.down}Descargar Excel</button>`) +
+    B("sub", `<button class="btn" data-a="sub">Sub-tablas ${I.chev}</button>`) +
+    B("undo", `<button class="btn sq" data-a="undo" title="Deshacer" ${h.undo.length?"":"disabled"}>${I.undo}</button>`) +
+    B("redo", `<button class="btn sq" data-a="redo" title="Rehacer" ${h.redo.length?"":"disabled"}>${I.redo}</button>`) +
+    B("clear", `<button class="btn red" data-a="clear">${I.eraser}Vaciar</button>`) +
+    B("ret", `<button class="btn" data-a="ret">${I.ext}Retirados</button>`) +
+    B("add", `<button class="btn" data-a="add">${I.userplus}Agregar usuario</button>`) +
+    B("hist", `<button class="btn" data-a="hist">${I.hist}Ver historial</button>`) +
+    B("save", `<button class="btn pri" data-a="save">${I.edit}Guardar</button>`) +
+    B("gear", `<button class="icon" data-a="gear" title="Salir sin guardar">${I.gear}</button>`);
+}
+function renderWho(){
+  const w = $("who");
+  w.style.display = session ? "flex" : "none";
+  w.innerHTML = session ? `Sesión: <b>${esc(session.user)}</b> · ${esc(session.role)} <button class="mini" id="bOut">Cerrar sesión</button>` : "";
+}
+function discardAll(){
+  const keep = plat;
+  Object.keys(DATA).forEach(p => {
+    plat = p; const s = st(); if(!s.editing) return;
+    if(H().undo.length) restore(H().undo[0]);
+    LOG[p].length = s.logLen; s.editing = false; s.view = null; HIST[p] = {undo:[], redo:[]};
+  });
+  plat = keep;
+}
+$("who").onclick = e => {
+  if(e.target.id!=="bOut") return;
+  const dirty = Object.keys(DATA).some(p => HIST[p].undo.length);
+  if(dirty && !confirm("Se cerrará la sesión y se descartarán los cambios sin guardar. ¿Continuar?")) return;
+  discardAll(); session = null; closeMenus(); render();
+};
+function controls(){
+  const s = st(), e = s.editing;
+  $("q").value = s.term; $("q").style.display = s.term ? "block" : "none";
+  $("d1").value = s.d1; $("d2").value = s.d2;
+  $("vtools").style.display = e ? "none" : "flex";
+  $("range").style.display = e ? "none" : "flex";
+  $("etools").classList.toggle("on", e);
+  if(e) etools();
+}
+function table(){
+  const s = st(), e = s.editing, c = cur(), t = e ? "" : s.term.toLowerCase(), f = e ? {} : s.filters;
+  $("wrap").style.display = (!e || s.view) ? "block" : "none";
+  $("emsg").style.display = (e && !s.view) ? "block" : "none";
+  $("subtools").style.display = (e && s.view) ? "flex" : "none";
+  $("addrow").style.display = (e && s.view && !c.main) ? "inline-flex" : "none";
+  $("addcol").style.display = (e && s.view && can("addcol")) ? "inline-flex" : "none";
+  $("addagent").style.display = (e && s.view && c.main) ? "inline-flex" : "none";
+  const hasAct = e && (!c.main || can("ret"));
+  $("hint").style.display = (e && s.view) ? "block" : "none";
+  $("wrap").classList.toggle("grid", isGrid());
+  const gk = plat + "|" + s.view; if(gk!==gridKey || !isGrid()){ anc = foc = null; gridKey = gk; }
+  $("head").innerHTML = c.cols.map((n,i) => {
+    const lo = c.main ? NUM_FROM : 0;
+    const mv = `<span class="cb"><button data-a="movecol" data-d="-1" data-c="${i}" title="Mover a la izquierda" ${i===lo?"disabled":""}>‹</button><button data-a="movecol" data-d="1" data-c="${i}" title="Mover a la derecha" ${i===c.cols.length-1?"disabled":""}>›</button>`;
+    let inner;
+    if(e && !c.main) inner = `<span class="cn" contenteditable="true" data-c="${i}" title="Haz clic para renombrar">${esc(n)}</span>${mv}<button data-a="delcol" data-c="${i}" title="Eliminar columna">×</button></span>`;
+    else if(e && c.main && i>=NUM_FROM) inner = `${esc(n)}${mv}</span>`;
+    else inner = esc(n) + ((!e && c.main) ? `<button data-c="${i}" class="${s.filters[i]?"act":""}" title="Filtrar">${I.funnel}</button>` : "");
+    return `<th><span>${inner}</span></th>`;
+  }).join("")
+    + (hasAct ? "<th>Acciones</th>" : "");
+  const list = c.rows.map((r,i)=>({r,i})).filter(({r}) =>
+    Object.entries(f).every(([k,set]) => set.has(String(r[k]))) && (!t || r.join(" ").toLowerCase().includes(t)));
+  const a = c.main ? ["retire","Retirar"] : ["del","Eliminar"];
+  $("body").innerHTML = list.length ? list.map(({r,i}) =>
+    "<tr>" + r.map((v,k)=>{
+      const ro = c.main && isN(plat,k), hi = ro && Number(v) > LIMITE_ROJO;
+      const tip = hi ? `Más de ${LIMITE_ROJO} registros` : (e && ro ? "Se calcula con las sub-tablas" : "");
+      return `<td data-r="${i}" data-c="${k}" class="${hi?"hi":""}" ${tip?`title="${tip}"`:""}>${esc(v)}</td>`;
+    }).join("")
+    + (hasAct ? `<td><button class="mini" data-a="${a[0]}" data-r="${i}">${a[1]}</button></td>` : "") + "</tr>").join("")
+    : `<tr><td class="empty" colspan="${c.cols.length+(hasAct?1:0)}">${e && !c.rows.length ? "Esta tabla está vacía." : "No hay resultados. Cambia o limpia los filtros."}</td></tr>`;
+  paint();
+}
+function render(){ tabs(); renderWho(); controls(); table(); }
+
+// ---- modo edición ----
+function startEdit(){ const s=st(); s.editing=true; s.view=null; HIST[plat]={undo:[],redo:[]}; s.logLen=LOG[plat].length; render(); }
+function endEdit(){ const s=st(); s.editing=false; s.view=null; HIST[plat]={undo:[],redo:[]}; closeMenus(); render(); }
+
+// ---- acceso ----
+const lg = $("lg");
+function openLogin(){ $("le").textContent=""; $("lgf").reset(); lg.classList.add("open"); $("lu").focus(); }
+function closeLogin(){ lg.classList.remove("open"); }
+$("bEdit").onclick = () => session ? startEdit() : openLogin();
+$("lgf").onsubmit = e => {
+  e.preventDefault();
+  const name = $("lu").value.trim().toLowerCase(), pw = $("lp").value;
+  const u = USERS.find(x => x.user.toLowerCase()===name && x.pass===pw);
+  if(u){ session = {user:u.user, role:u.role}; closeLogin(); log(`Inició sesión (${u.role})`); startEdit(); }
+  else { $("le").textContent = "Usuario o contraseña incorrectos."; $("lp").value=""; $("lp").focus(); }
+};
+$("lc").onclick = closeLogin;
+lg.onclick = e => { if(e.target===lg) closeLogin(); };
+
+// ---- ventanas ----
+const md = $("md");
+function modal(h){ $("mdb").innerHTML = h; md.classList.add("open"); }
+function closeMd(){ md.classList.remove("open"); }
+const closeRow = `<div class="row"><button type="button" data-a="close">Cerrar</button></div>`;
+function openRet(){
+  const R = RET[plat], A = dt().rows;
+  modal(`<h2>Retirados — ${plat}</h2><p>Usuarios que ya no aparecen en la tabla principal.</p>` +
+    (A.length ? `<div class="li"><select id="rsel">${A.map((r,i)=>`<option value="${i}">${esc(r[0])} — ${esc(r[1])}</option>`).join("")}</select><button class="mini" data-a="retire2">Retirar</button></div>` : "") +
+    (R.length ? R.map((r,i)=>`<div class="li"><span><b>${esc(r[0])}</b> ${esc(r[1])}</span><button class="mini" data-a="restore" data-r="${i}">Restaurar</button></div>`).join("") : `<p style="margin-top:12px">No hay usuarios retirados.</p>`) + closeRow);
+}
+function openHist(){
+  const L = LOG[plat].slice(-200).reverse();
+  modal(`<h2>Historial — ${plat}</h2>` +
+    (L.length ? L.map(x=>`<div class="li"><span>${esc(x.m)}</span><small>${esc((x.u ? x.u + " · " : "") + x.t)}</small></div>`).join("") : `<p>Todavía no hay cambios registrados.</p>`) + closeRow);
+}
+function openAgent(){
+  modal(`<form id="agf" autocomplete="off"><h2>Agregar agente</h2><p>Se agrega a la tabla principal de ${plat}.</p>
+    <label>${esc(dt().cols[0])}<input name="u" required></label>
+    <label>${esc(dt().cols[1])}<input name="a" required></label>
+    <label>${esc(dt().cols[2])}<input name="c"></label>
+    <p class="err" id="ae" role="alert"></p>
+    <div class="row"><button type="button" data-a="close">Cancelar</button><button type="submit" class="ok">Agregar</button></div></form>`);
+  md.querySelector("input").focus();
+}
+function openEditUser(i){
+  const u = USERS[i]; if(!u) return;
+  modal(`<form id="euf" autocomplete="off"><h2>Editar usuario</h2><p>Rol: ${esc(u.role)}. Cambia el nombre de usuario, la contraseña o ambos.</p>
+    <input type="hidden" name="i" value="${i}">
+    <label>Usuario<input name="u" value="${esc(u.user)}" required></label>
+    <label>Nueva contraseña<input name="p" type="password" minlength="4" placeholder="Déjala vacía para no cambiarla" autocomplete="new-password"></label>
+    <p class="err" id="ae" role="alert"></p>
+    <div class="row"><button type="button" data-a="users">Volver</button><button type="submit" class="ok">Guardar cambios</button></div></form>`);
+  md.querySelector("input[name=u]").focus();
+}
+function openUsers(){
+  modal(`<form id="addf" autocomplete="off"><h2>Agregar usuario</h2><p>Crea una cuenta para iniciar sesión y editar.</p>
+    <label>Usuario<input name="u" required></label>
+    <label>Contraseña<input name="p" type="password" minlength="4" required></label>
+    <label>Rol<select name="r">${Object.keys(ROLES).filter(r => r!=="Administrador").concat("Administrador").map(r => `<option>${r}</option>`).join("")}</select></label>
+    <ul class="roles">${Object.entries(ROLES).map(([n,v]) => `<li><b>${n}:</b> ${v.desc}</li>`).join("")}</ul>
+    <p class="err" id="ae" role="alert"></p>
+    <div class="row"><button type="button" data-a="close">Cerrar</button><button type="submit" class="ok">Crear usuario</button></div></form>
+    <h3>Usuarios existentes</h3>` +
+    USERS.map((u,i) => `<div class="li"><span><b>${esc(u.user)}</b> · ${esc(u.role)}</span><span style="display:flex;gap:6px;align-items:center">${u.main ? "<small>principal</small>" : ""}<button class="mini" data-a="edituser" data-i="${i}">Editar</button>${u.main ? "" : `<button class="mini" data-a="deluser" data-i="${i}">Eliminar</button>`}</span></div>`).join(""));
+  md.querySelector("input").focus();
+}
+md.addEventListener("click", e => {
+  if(e.target===md || e.target.closest("[data-a=close]")) return closeMd();
+  const b = e.target.closest("[data-a]"); if(!b) return;
+  if(b.dataset.a==="restore" && can("ret")){
+    const i = +b.dataset.r, row = RET[plat][i];
+    mutate(`Restauró a ${row[0]}`, () => { RET[plat].splice(i,1); dt().rows.push(row); });
+    openRet(); table();
+  }
+  if(b.dataset.a==="retire2" && can("ret")){
+    const i = +$("rsel").value, row = dt().rows[i]; if(!row) return;
+    mutate(`Retiró a ${row[0]}`, () => { RET[plat].push(row); dt().rows.splice(i,1); });
+    openRet(); table();
+  }
+  if(b.dataset.a==="edituser" && can("add")) return openEditUser(+b.dataset.i);
+  if(b.dataset.a==="users" && can("add")) return openUsers();
+  if(b.dataset.a==="deluser" && can("add")){
+    const u = USERS[+b.dataset.i]; if(!u || u.main) return;
+    if(!confirm(`¿Eliminar al usuario “${u.user}”?`)) return;
+    USERS.splice(+b.dataset.i, 1); saveUsers(); log(`Eliminó al usuario ${u.user}`); openUsers();
+  }
+});
+md.addEventListener("submit", e => {
+  e.preventDefault(); const f = e.target;
+  if(f.id==="colf"){
+    if(!can("addcol")) return;
+    const c = cur(), n = f.n.value.trim();
+    if(c.cols.some(x => x.toLowerCase()===n.toLowerCase())){ $("ce").textContent = "Ya existe una columna con ese nombre."; return; }
+    if(c.main && f.k && f.k.value==="t"){
+      mutate(`Agregó la columna libre ${n} a la tabla principal`, () => {
+        c.cols.push(n); dt().kinds.push("t"); c.rows.forEach(r => r.push("")); RET[plat].forEach(r => r.push(""));
+      });
+      closeMd(); table(); toast("Columna libre agregada."); return;
+    }
+    if(c.main){
+      const sn = subOf(n);
+      if(subnames(plat).includes(sn)){ $("ce").textContent = "Ya existe una sub-tabla con ese nombre."; return; }
+      mutate(`Agregó la columna ${n} a la tabla principal (sub-tabla ${sn})`, () => {
+        c.cols.push(n); dt().kinds.push("n"); c.rows.forEach(r => r.push(0)); RET[plat].forEach(r => r.push(0));
+        SUB[plat][sn] = []; SUBC[plat][sn] = [...SUBCOLS];
+      });
+      closeMd(); table(); toast(`Columna agregada. Su sub-tabla es ${sn}.`); return;
+    }
+    mutate(`Agregó la columna ${n} a ${c.key}`, () => { c.cols.push(n); c.rows.forEach(r => r.push("")); });
+    closeMd(); table(); toast("Columna agregada."); return;
+  }
+  if(f.id==="agf"){
+    const u = f.u.value.trim(), a = f.a.value.trim(), c = f.c.value.trim();
+    if(dt().rows.some(r => String(r[0]).toLowerCase()===u.toLowerCase())){ $("ae").textContent = "Ese usuario ya existe en "+plat+"."; return; }
+    mutate(`Agregó al agente ${u}`, () => dt().rows.push([u,a,c,...dt().cols.slice(NUM_FROM).map((_,i) => isN(plat,NUM_FROM+i) ? 0 : "")]));
+    closeMd(); table(); toast("Agente agregado."); return;
+  }
+  if(f.id==="euf"){
+    if(!can("add")) return;
+    const i = +f.i.value, u = USERS[i]; if(!u) return;
+    const nu = f.u.value.trim(), np = f.p.value, old = u.user, nameChanged = nu!==old, passChanged = np!=="";
+    if(USERS.some((x,k) => k!==i && x.user.toLowerCase()===nu.toLowerCase())){ $("ae").textContent = "Ese usuario ya existe."; return; }
+    if(!nameChanged && !passChanged) return openUsers();
+    u.user = nu; if(passChanged) u.pass = np;
+    if(session && session.user===old) session.user = nu;
+    saveUsers();
+    log(`Modificó al usuario ${old}${nameChanged?` (nuevo usuario: ${nu})`:""}${passChanged?" (nueva contraseña)":""}`);
+    renderWho(); openUsers(); toast("Usuario actualizado."); return;
+  }
+  if(f.id==="addf"){
+    if(!can("add")) return;
+    const u = f.u.value.trim(), pw = f.p.value, r = f.r.value;
+    if(!ROLES[r]) return;
+    if(USERS.some(x => x.user.toLowerCase()===u.toLowerCase())){ $("ae").textContent = "Ese usuario ya existe."; return; }
+    USERS.push({user:u, pass:pw, role:r}); saveUsers(); log(`Creó el usuario ${u} con el rol ${r}`);
+    openUsers(); toast(`Usuario ${u} creado con el rol ${r}.`);
+  }
+});
+
+// ---- menú de sub-tablas ----
+const smenu = $("smenu");
+function closeMenus(){ smenu.style.display="none"; pop.style.display="none"; }
+function openMenu(btn){
+  if(smenu.style.display==="block") return closeMenus();
+  const items = [["main","Tabla Principal"], ...subnames(plat).map(n => [n,n])].filter(([k]) => canTable(k)), cv = st().view || "";
+  smenu.innerHTML = items.length ? items.map(([k,n]) => `<button data-k="${esc(k)}" class="${cv===k?"on":""}">${esc(n)}</button>`).join("") : `<button disabled>Sin sub-tablas disponibles</button>`;
+  const rc = btn.getBoundingClientRect();
+  smenu.style.left = (rc.left+scrollX)+"px"; smenu.style.top = (rc.bottom+scrollY+6)+"px"; smenu.style.display = "block";
+}
+smenu.onclick = e => { const b=e.target.closest("button"); if(!b || b.disabled || !canTable(b.dataset.k)) return; st().view=b.dataset.k; closeMenus(); table(); etools(); };
+
+// ---- barra de edición ----
+$("etools").onclick = e => {
+  const b = e.target.closest("button"); if(!b || b.disabled) return;
+  const a = b.dataset.a, s = st(), needView = () => { if(!s.view){ toast("Primero elige una tabla en “Sub-tablas”."); return true; } };
+  if(!can(a)) return;
+  if(a==="search") return toggleSearch();
+  if(a==="sub") return openMenu(b);
+  if(a==="up"){ if(needView()) return; return $("xf").click(); }
+  if(a==="down"){
+    if(typeof XLSX==="undefined") return toast("No se cargó la librería de Excel. Revisa tu conexión a internet.");
+    const wb = XLSX.utils.book_new(), used = new Set();
+    const addSheet = (name, cols, rows) => {
+      const base = name.replace(/[\[\]:*?\/\\]/g, "").slice(0,28) || "Hoja"; let n = base, i = 2;
+      while(used.has(n.toLowerCase())) n = base + "_" + (i++);
+      used.add(n.toLowerCase()); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([cols, ...rows]), n);
+    };
+    if(canTable("main")) addSheet("Tabla Principal", dt().cols, dt().rows);
+    subnames(plat).filter(n => canTable(n)).forEach(n => addSheet(n, SUBC[plat][n], SUB[plat][n]));
+    if(!wb.SheetNames.length) return toast("No hay tablas disponibles para descargar en "+plat+".");
+    XLSX.writeFile(wb, `${plat}.xlsx`); log(`Descargó el Excel de ${plat} (${wb.SheetNames.length} hojas)`);
+    return toast(`Se descargó ${plat}.xlsx con ${wb.SheetNames.length} hojas.`);
+  }
+  if(a==="undo"){ H().redo.push(snap()); restore(H().undo.pop()); log("Deshizo un cambio"); render(); }
+  if(a==="redo"){ H().undo.push(snap()); restore(H().redo.pop()); log("Rehizo un cambio"); render(); }
+  if(a==="clear"){
+    if(needView()) return;
+    if(!confirm(`¿Vaciar “${label()}” de ${plat}? Podrás deshacerlo con el botón de deshacer.`)) return;
+    const c = cur(); mutate(`Vació ${label()}`, () => c.rows.splice(0)); table();
+  }
+  if(a==="ret") openRet();
+  if(a==="add") openUsers();
+  if(a==="hist") openHist();
+  if(a==="save"){
+    log("Guardó los cambios");
+    if(persist()){ endEdit(); toast("Cambios guardados."); } else toast("No se pudo guardar en este navegador.");
+  }
+  if(a==="gear"){
+    if(!confirm("¿Salir del modo edición sin guardar los cambios?")) return;
+    if(H().undo.length) restore(H().undo[0]);
+    LOG[plat].length = s.logLen; endEdit();
+  }
+};
+
+// ---- edición de celdas y filas ----
+$("body").addEventListener("focusout", e => { const td = e.target; if(td.isContentEditable) finishEdit(td, false); });
+function finishEdit(td, cancel){
+  const c = cur(), r = +td.dataset.r, i = +td.dataset.c, old = c.rows[r][i];
+  let v = cancel ? String(old) : td.textContent.trim();
+  td.textContent = v;
+  editCell = null; td.contentEditable = "false";
+  if(cancel || v===old) return;
+  mutate(c.main ? `Cambió ${c.cols[i]} de ${c.rows[r][0]}: ${old} → ${v}` : `Editó ${c.key} (${c.cols[i]}): ${old} → ${v}`, () => { c.rows[r][i] = v; });
+}
+
+// ---- sub-tablas como Excel: selección, copiar, cortar, pegar ----
+const cellEl = (r,c) => $("body").querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+function rng(){ return {r0:Math.min(anc.r,foc.r), r1:Math.max(anc.r,foc.r), c0:Math.min(anc.c,foc.c), c1:Math.max(anc.c,foc.c)}; }
+function paint(){
+  $("body").querySelectorAll("td.sel,td.ac").forEach(t => t.classList.remove("sel","ac"));
+  if(!isGrid() || !anc) return;
+  const c = cur(); if(!c.rows.length){ anc = foc = null; return; }
+  const cl = (p) => ({r:Math.max(0,Math.min(c.rows.length-1,p.r)), c:Math.max(0,Math.min(c.cols.length-1,p.c))});
+  anc = cl(anc); foc = cl(foc);
+  const R = rng();
+  $("body").querySelectorAll("td[data-r]").forEach(td => {
+    const r = +td.dataset.r, k = +td.dataset.c;
+    if(r>=R.r0 && r<=R.r1 && k>=R.c0 && k<=R.c1){ td.classList.add("sel"); if(r===anc.r && k===anc.c) td.classList.add("ac"); }
+  });
+}
+function beginEdit(r, c, ch){
+  const k = cur(); if(k.main && isN(plat,c)) return;   // las columnas de conteo se calculan solas
+  const td = cellEl(r,c); if(!td) return;
+  editCell = {td, r, c}; td.contentEditable = "true"; td.focus();
+  if(ch!==undefined) td.textContent = ch;
+  const g = getSelection(), rg = document.createRange(); rg.selectNodeContents(td); rg.collapse(false); g.removeAllRanges(); g.addRange(rg);
+}
+function move(dr, dc, ext){
+  const c = cur(); if(!c.rows.length) return;
+  if(!foc){ anc = {r:0,c:0}; foc = {r:0,c:0}; }
+  else {
+    foc = {r:Math.max(0,Math.min(c.rows.length-1,foc.r+dr)), c:Math.max(0,Math.min(c.cols.length-1,foc.c+dc))};
+    if(!ext) anc = {...foc};
+  }
+  paint(); const el = cellEl(foc.r, foc.c); if(el) el.scrollIntoView({block:"nearest", inline:"nearest"});
+}
+function clearSel(){
+  if(!anc) return; const c = cur(), R = rng(); let n = 0;
+  mutate(`Borró celdas en ${label()}`, () => {
+    for(let i=R.r0;i<=R.r1;i++) for(let j=R.c0;j<=R.c1;j++){ if(c.main && isN(plat,j)) continue; c.rows[i][j] = ""; n++; }
+  });
+  table();
+}
+function parseTSV(t){
+  const rows = []; let row = [], cell = "", q = false; t = t.replace(/\r\n?/g, "\n");
+  for(let i=0;i<t.length;i++){
+    const ch = t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ cell += '"'; i++; } else q = false; } else cell += ch; }
+    else if(ch==='"' && cell==="") q = true;
+    else if(ch==="\t"){ row.push(cell); cell = ""; }
+    else if(ch==="\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += ch;
+  }
+  if(cell!=="" || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+function tsv(){
+  const c = cur(), R = rng(), q = v => /[\t\n"]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  return c.rows.slice(R.r0, R.r1+1).map(r => r.slice(R.c0, R.c1+1).map(v => q(String(v ?? ""))).join("\t")).join("\n");
+}
+function pasteGrid(txt){
+  const g = parseTSV(txt); if(!g.length) return;
+  const c = cur(), R = rng(), h = g.length, w = Math.max(...g.map(r => r.length));
+  const single = h===1 && w===1 && (R.r1>R.r0 || R.c1>R.c0);
+  const clean = v => String(v ?? "").replace(/\s*[\r\n]+\s*/g, " ").trim();
+  const grow = !c.main && can("addcol");                 // solo el Administrador crea columnas al pegar
+  const nR = single ? R.r1-R.r0+1 : h; let nC = single ? R.c1-R.c0+1 : w;
+  const cut = !grow && R.c0+nC > c.cols.length; if(cut) nC = c.cols.length - R.c0;
+  const skip = j => c.main && isN(plat,j);               // los conteos de la principal se calculan solos
+  mutate(`Pegó ${nR}×${nC} celdas en ${label()}`, () => {
+    if(grow) while(c.cols.length < R.c0+nC){ let n = c.cols.length+1, name; do{ name = "Columna " + (n++); }while(c.cols.includes(name)); c.cols.push(name); c.rows.forEach(r => r.push("")); }
+    while(c.rows.length < R.r0+nR) c.rows.push(c.cols.map((_,j) => skip(j) ? 0 : ""));
+    for(let i=0;i<nR;i++) for(let j=0;j<nC;j++){ if(skip(R.c0+j)) continue; c.rows[R.r0+i][R.c0+j] = clean(single ? g[0][0] : (g[i][j] ?? "")); }
+  });
+  anc = {r:R.r0, c:R.c0}; foc = {r:R.r0+nR-1, c:R.c0+nC-1};
+  table();
+  const notas = [];
+  if(c.main && Array.from({length:nC},(_,j)=>skip(R.c0+j)).some(Boolean)) notas.push("Las columnas de conteo se calculan solas y no se pegan.");
+  if(cut) notas.push("Se omitieron las columnas que no existen.");
+  toast(`Se pegaron ${nR}×${nC} celdas. ${notas.join(" ")}`.trim());
+}
+function gridReady(){
+  if(!isGrid() || md.classList.contains("open") || lg.classList.contains("open")) return false;
+  const ae = document.activeElement;
+  if(ae && (/INPUT|TEXTAREA/.test(ae.tagName) || (ae.isContentEditable && !ae.closest("#body")))) return false;
+  return true;
+}
+$("body").addEventListener("mousedown", e => {
+  if(!isGrid()) return; const td = e.target.closest("td[data-r]"); if(!td) return;
+  if(editCell && editCell.td===td) return;
+  if(editCell) finishEdit(editCell.td, false);
+  e.preventDefault(); if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  const r = +td.dataset.r, k = +td.dataset.c;
+  if(e.shiftKey && anc) foc = {r, c:k}; else { anc = {r, c:k}; foc = {r, c:k}; }
+  dragging = true; paint();
+});
+$("body").addEventListener("mouseover", e => {
+  if(!dragging) return; const td = e.target.closest("td[data-r]"); if(!td) return;
+  foc = {r:+td.dataset.r, c:+td.dataset.c}; paint();
+});
+document.addEventListener("mouseup", () => { dragging = false; });
+$("body").addEventListener("dblclick", e => {
+  if(!isGrid()) return; const td = e.target.closest("td[data-r]"); if(td) beginEdit(+td.dataset.r, +td.dataset.c);
+});
+document.addEventListener("keydown", e => {
+  if(!isGrid()) return;
+  const k = e.key, mod = e.ctrlKey || e.metaKey;
+  if(editCell){
+    if(k==="Enter" || k==="Tab"){
+      e.preventDefault(); finishEdit(editCell.td, false);
+      if(k==="Enter") move(e.shiftKey?-1:1, 0, false); else move(0, e.shiftKey?-1:1, false);
+    } else if(k==="Escape"){ e.preventDefault(); finishEdit(editCell.td, true); }
+    return;
+  }
+  if(!gridReady() || !anc) return;
+  if(mod){
+    const kk = k.toLowerCase();
+    if(kk==="a"){ e.preventDefault(); const c = cur(); anc = {r:0,c:0}; foc = {r:c.rows.length-1, c:c.cols.length-1}; paint(); }
+    else if(kk==="z" || kk==="y"){
+      e.preventDefault(); const b = $("etools").querySelector(`[data-a=${(kk==="y"||e.shiftKey)?"redo":"undo"}]`); if(b) b.click();
+    }
+    return;
+  }
+  const arrows = {ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1]};
+  if(arrows[k]){ e.preventDefault(); move(arrows[k][0], arrows[k][1], e.shiftKey); }
+  else if(k==="Tab"){ e.preventDefault(); move(0, e.shiftKey?-1:1, false); }
+  else if(k==="Enter" || k==="F2"){ e.preventDefault(); beginEdit(anc.r, anc.c); }
+  else if(k==="Delete" || k==="Backspace"){ e.preventDefault(); clearSel(); }
+  else if(k.length===1 && !e.altKey){ e.preventDefault(); beginEdit(anc.r, anc.c, k); }
+});
+document.addEventListener("copy", e => { if(editCell || !gridReady() || !anc) return; e.clipboardData.setData("text/plain", tsv()); e.preventDefault(); });
+document.addEventListener("cut", e => { if(editCell || !gridReady() || !anc) return; e.clipboardData.setData("text/plain", tsv()); e.preventDefault(); clearSel(); });
+document.addEventListener("paste", e => {
+  const txt = e.clipboardData.getData("text/plain");
+  if(editCell){ e.preventDefault(); document.execCommand("insertText", false, txt.replace(/\s*[\r\n]+\s*/g," ").replace(/\t/g," ")); return; }
+  if(!gridReady() || !anc) return;
+  e.preventDefault(); pasteGrid(txt);
+});
+$("body").onclick = e => {
+  const b = e.target.closest("button[data-a]"); if(!b) return;
+  const c = cur(), r = +b.dataset.r;
+  if(b.dataset.a==="retire" && can("ret")){ const row = c.rows[r]; mutate(`Retiró a ${row[0]}`, () => { RET[plat].push(row); c.rows.splice(r,1); }); }
+  if(b.dataset.a==="del") mutate(`Eliminó una fila de ${c.key}`, () => c.rows.splice(r,1));
+  table();
+};
+$("head").addEventListener("keydown", e => { if(e.key==="Enter" && e.target.classList.contains("cn")){ e.preventDefault(); e.target.blur(); } });
+$("head").addEventListener("focusout", e => {
+  const el = e.target; if(!el.classList || !el.classList.contains("cn")) return;
+  const c = cur(), i = +el.dataset.c, old = c.cols[i], v = el.textContent.trim() || old;
+  el.textContent = v; if(v===old) return;
+  if(c.cols.some((x,k) => k!==i && x.toLowerCase()===v.toLowerCase())){ el.textContent = old; return toast("Ya existe una columna con ese nombre."); }
+  mutate(`Renombró la columna ${old} a ${v} en ${c.key}`, () => { c.cols[i] = v; });
+});
+$("addagent").onclick = openAgent;
+$("addcol").onclick = () => {
+  if(!can("addcol")) return;
+  modal(`<form id="colf" autocomplete="off"><h2>Agregar columna</h2><p>${cur().main ? `Se agrega a la tabla principal de ${plat}. Elige si la columna cuenta registros de una sub-tabla o si la llenas tú a mano.` : `Se agrega a ${esc(cur().key)} en ${plat}.`}</p>
+    <label>Nombre de la columna<input name="n" required></label>
+    ${cur().main ? `<label>Tipo de columna<select name="k"><option value="n">Contador: suma cuántas veces aparece cada usuario en su sub-tabla</option><option value="t">Libre: acepta letras, números o caracteres</option></select></label>` : ""}
+    <p class="err" id="ce" role="alert"></p>
+    <div class="row"><button type="button" data-a="close">Cancelar</button><button type="submit" class="ok">Agregar</button></div></form>`);
+  md.querySelector("input").focus();
+};
+$("addrow").onclick = () => {
+  const c = cur(); mutate(`Agregó una fila a ${c.key}`, () => c.rows.push(["", new Date().toISOString().slice(0,10), ""])); table();
+};
+
+// ---- subir Excel ----
+$("xf").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  if(typeof XLSX==="undefined") return toast("No se cargó la librería de Excel. Revisa tu conexión a internet.");
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const wb = XLSX.read(rd.result, {type:"array"});
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""});
+      const c = cur();
+      const hd = c.main ? c.cols : (aoa[0] || []).map((v,i) => String(v).trim() || `Columna ${i+1}`);
+      if(!hd.length) return toast("El archivo está vacío.");
+      const rows = aoa.slice(1).filter(r => r.some(v => String(v).trim()!=="")).map(r => hd.map((_,i) => {
+        const v = r[i] ?? "";
+        if(c.main && isN(plat,i)){ const x = parseInt(v,10); return isNaN(x) ? 0 : x; }
+        return String(v);
+      }));
+      mutate(`Subió un Excel a ${label()} (${rows.length} filas)`, () => { if(!c.main) SUBC[plat][c.key] = hd; c.rows.splice(0, c.rows.length, ...rows); });
+      table(); toast(`Se cargaron ${rows.length} filas. ${c.main ? "La primera fila se tomó como encabezado." : "Las columnas se tomaron de la primera fila."}`);
+    }catch(err){ toast("No se pudo leer el archivo."); }
+  };
+  rd.readAsArrayBuffer(f);
+};
+
+// ---- vista normal: pestañas, búsqueda, fechas, filtros ----
+$("tabs").onclick = e => { const p = e.target.dataset.p; if(p){ plat=p; closeMenus(); render(); } };
+function toggleSearch(){
+  const q = $("q");
+  if(q.style.display==="block"){ st().term=""; q.value=""; q.style.display="none"; table(); }
+  else { q.style.display="block"; q.focus(); }
+}
+$("bSearch").onclick = toggleSearch;
+$("q").oninput = e => { st().term = e.target.value; table(); };
+$("d1").onchange = e => st().d1 = e.target.value;
+$("d2").onchange = e => st().d2 = e.target.value;
+$("bReset").onclick = () => { const s=st(); s.filters={}; s.term=""; render(); };
+
+const pop = $("pop");
+$("head").onclick = e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.a==="movecol"){
+    if(b.disabled) return;
+    const k = cur(), j = +b.dataset.c, d = +b.dataset.d, t = j + d;
+    if(t<0 || t>=k.cols.length || (k.main && (j<NUM_FROM || t<NUM_FROM))) return;
+    mutate(`Movió la columna ${k.cols[j]} a la ${d<0?"izquierda":"derecha"} en ${k.key}`, () => {
+      const sw = a => { [a[j],a[t]] = [a[t],a[j]]; };
+      sw(k.cols); k.rows.forEach(sw); if(k.main){ RET[plat].forEach(sw); sw(dt().kinds); }
+    });
+    if(k.main) st().filters = {};
+    return table();
+  }
+  if(b.dataset.a==="delcol"){
+    const k = cur(), j = +b.dataset.c;
+    if(k.cols.length<=1) return toast("La tabla debe tener al menos una columna.");
+    if(!confirm(`¿Eliminar la columna “${k.cols[j]}” y sus datos?`)) return;
+    mutate(`Eliminó la columna ${k.cols[j]} de ${k.key}`, () => { k.cols.splice(j,1); k.rows.forEach(r => r.splice(j,1)); });
+    return table();
+  }
+  const c = +b.dataset.c;
+  const vals = [...new Set(dt().rows.map(r => String(r[c])))].sort((a,b)=>a.localeCompare(b,"es",{numeric:true}));
+  const sel = st().filters[c] || new Set(vals);
+  pop.innerHTML = `<div class="acts"><button data-a="all">Todos</button><button data-a="none">Ninguno</button></div>` +
+    vals.map(v=>`<label><input type="checkbox" value="${esc(v)}" ${sel.has(v)?"checked":""}> ${esc(v)}</label>`).join("");
+  const rc = b.getBoundingClientRect();
+  pop.style.left = Math.min(rc.left+scrollX, innerWidth-250)+"px";
+  pop.style.top = (rc.bottom+scrollY+6)+"px";
+  pop.style.display = "block"; pop.dataset.c = c;
+};
+function apply(){
+  const c = pop.dataset.c, all = [...pop.querySelectorAll("input")];
+  const on = all.filter(i=>i.checked).map(i=>i.value);
+  if(on.length===all.length) delete st().filters[c]; else st().filters[c] = new Set(on);
+  table();
+}
+pop.onchange = apply;
+pop.onclick = e => { const a = e.target.dataset.a; if(!a) return; pop.querySelectorAll("input").forEach(i => i.checked = a==="all"); apply(); };
+document.addEventListener("click", e => {
+  if(!pop.contains(e.target) && !e.target.closest("th button")) pop.style.display="none";
+  if(!smenu.contains(e.target) && !e.target.closest("[data-a=sub]")) smenu.style.display="none";
+});
+document.addEventListener("keydown", e => { if(e.key==="Escape"){ closeLogin(); closeMd(); closeMenus(); } });
+
+load();
+loadUsers();
+render();
+</script>
+</body>
+</html>
