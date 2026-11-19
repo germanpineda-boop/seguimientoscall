@@ -1,0 +1,19 @@
+name: Actualizar proyecto 
+
+on:
+push:
+Branches:
+- principal
+
+permissions:
+contents: write
+
+jobs:
+Actualizar:
+runs-on: ubuntu-latest
+steps:
+-name: Descargar proyecto
+uses: actions/checkout@v4
+
+-name: Actualizar publicaciòn 
+run: echo "Proyecto actualizado correctamente"
